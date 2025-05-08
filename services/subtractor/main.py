@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import ssl
 import nats
 import nats.micro
 
@@ -26,10 +27,15 @@ async def main():
     else:
         server_urls = [url.strip() for url in server_urls]
         print(f"Using NATS servers: {server_urls}")
-    nats_user = os.environ.get("NATS_USER")
-    nats_password = os.environ.get("NATS_PASSWORD")
-    if not nats_user or not nats_password:
-        raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
+
+    ssl_ctx = ssl.create_default_context(
+        purpose=ssl.Purpose.SERVER_AUTH,
+        cafile="/etc/nats/tls/ca.crt"
+    )
+    ssl_ctx.load_cert_chain(
+        certfile="/etc/nats/tls/tls.crt",
+        keyfile="/etc/nats/tls/tls.key"
+    )
     
     # Load schemas
     schemas_folder = os.path.join(os.path.dirname(__file__), "schemas")
@@ -40,7 +46,7 @@ async def main():
     
     print(f"Connecting to NATS servers: {server_urls}")
     # Connect to NATS server
-    nc = await nats.connect(servers=server_urls, user=nats_user, password=nats_password)
+    nc = await nats.connect(servers=server_urls, tls=ssl_ctx)
 
     # Create the SubtractorService
     svc = await nats.micro.add_service(nc, name=f"SubtractorService_{region}", version="1.0.0", description="Subtract the second number from the first")
