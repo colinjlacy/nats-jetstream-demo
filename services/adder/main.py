@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import ssl
 import nats
 import nats.micro
 
@@ -30,7 +31,18 @@ async def main():
     # nats_password = os.environ.get("NATS_PASSWORD")
     # if not nats_user or not nats_password:
     #     raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
-    
+    ssl_ctx = ssl.create_default_context(
+        purpose=ssl.Purpose.SERVER_AUTH,
+        cafile="/etc/nats/tls/ca.crt"
+    )
+    ssl_ctx.load_cert_chain(
+        certfile="/etc/nats/tls/tls.crt",
+        keyfile="/etc/nats/tls/tls.key"
+    )
+
+    # Optional: disable hostname check if using IP address
+    # ssl_ctx.check_hostname = False
+
     # Load schemas
     schemas_folder = os.path.join(os.path.dirname(__file__), "schemas")
     with open(os.path.join(schemas_folder, "endpoint-schema.json"), "r") as file:
@@ -40,7 +52,7 @@ async def main():
     
     print(f"Connecting to NATS servers: {server_urls}")
     # Connect to NATS server
-    nc = await nats.connect(servers=server_urls, tls={"certfile": "/etc/nats/tls/tls.crt", "keyfile": "/etc/nats/tls/tls.key", "cafile": "/etc/nats/tls/ca.crt"})
+    nc = await nats.connect(servers=server_urls, tls=ssl_ctx)
 
     # Create the AdderService
     svc = await nats.micro.add_service(nc, name=f"AdderService_{region}", version="1.0.0", description="Add two numbers")

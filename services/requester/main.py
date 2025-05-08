@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import random
+import ssl
 from nats.aio.client import Client as NATS
 
 async def main():
@@ -16,8 +17,16 @@ async def main():
     # nats_password = os.environ.get("NATS_PASSWORD")
     # if not nats_user or not nats_password:
     #     raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
+    ssl_ctx = ssl.create_default_context(
+        purpose=ssl.Purpose.SERVER_AUTH,
+        cafile="/etc/nats/tls/ca.crt"
+    )
+    ssl_ctx.load_cert_chain(
+        certfile="/etc/nats/tls/tls.crt",
+        keyfile="/etc/nats/tls/tls.key"
+    )
     nc = NATS()
-    await nc.connect(servers=server_urls, tls={"certfile": "/etc/nats/tls/tls.crt", "keyfile": "/etc/nats/tls/tls.key", "cafile": "/etc/nats/tls/ca.crt"})
+    await nc.connect(servers=server_urls, tls=ssl_ctx)
     # await nc.connect(servers=server_urls, user=nats_user, password=nats_password)
 
     # Read the number of iterations from the environment variable
