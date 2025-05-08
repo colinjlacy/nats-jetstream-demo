@@ -20,7 +20,7 @@ spec:
             secretName: nats-operator-tls
       containers:
         - name: divider
-          image: ghcr.io/colinjlacy/colinjlacy/nats-cluster-demo-divider:latest
+          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-divider:latest
           imagePullPolicy: Always
           env:
             - name: NATS_SERVERS

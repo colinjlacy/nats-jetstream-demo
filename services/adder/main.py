@@ -26,10 +26,10 @@ async def main():
     else:
         server_urls = [url.strip() for url in server_urls]
         print(f"Using NATS servers: {server_urls}")
-    nats_user = os.environ.get("NATS_USER")
-    nats_password = os.environ.get("NATS_PASSWORD")
-    if not nats_user or not nats_password:
-        raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
+    # nats_user = os.environ.get("NATS_USER")
+    # nats_password = os.environ.get("NATS_PASSWORD")
+    # if not nats_user or not nats_password:
+    #     raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
     
     # Load schemas
     schemas_folder = os.path.join(os.path.dirname(__file__), "schemas")

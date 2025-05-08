@@ -20,7 +20,7 @@ spec:
             secretName: nats-operator-tls
       containers:
         - name: adder
-          image: ghcr.io/colinjlacy/colinjlacy/nats-cluster-demo-adder:latest
+          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-adder:latest
           imagePullPolicy: Always
           env:
             - name: NATS_SERVERS

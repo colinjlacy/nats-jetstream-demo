@@ -12,12 +12,13 @@ async def main():
     else:
         server_urls = [url.strip() for url in server_urls]
         print(f"Using NATS servers: {server_urls}")
-    nats_user = os.environ.get("NATS_USER")
-    nats_password = os.environ.get("NATS_PASSWORD")
-    if not nats_user or not nats_password:
-        raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
+    # nats_user = os.environ.get("NATS_USER")
+    # nats_password = os.environ.get("NATS_PASSWORD")
+    # if not nats_user or not nats_password:
+    #     raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
     nc = NATS()
-    await nc.connect(servers=server_urls, user=nats_user, password=nats_password)
+    await nc.connect(servers=server_urls, tls={"certfile": "/etc/nats/tls/tls.crt", "keyfile": "/etc/nats/tls/tls.key", "cafile": "/etc/nats/tls/ca.crt"})
+    # await nc.connect(servers=server_urls, user=nats_user, password=nats_password)
 
     # Read the number of iterations from the environment variable
     loop_count = int(os.getenv("LOOP_COUNT", 10))

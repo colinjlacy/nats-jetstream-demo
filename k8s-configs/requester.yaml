@@ -16,7 +16,7 @@ spec:
             secretName: nats-requester-tls
       containers:
         - name: requester
-          image: ghcr.io/colinjlacy/colinjlacy/nats-cluster-demo-requester:latest
+          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-requester:latest
           imagePullPolicy: Always
           env:
             - name: NATS_SERVERS

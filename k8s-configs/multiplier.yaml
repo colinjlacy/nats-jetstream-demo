@@ -20,7 +20,7 @@ spec:
             secretName: nats-operator-tls
       containers:
         - name: multiplier
-          image: ghcr.io/colinjlacy/colinjlacy/nats-cluster-demo-multiplier:latest
+          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-multiplier:latest
           imagePullPolicy: Always
           env:
             - name: NATS_SERVERS
@@ -33,10 +33,10 @@ spec:
                 secretKeyRef:
                   name: nats-credentials
                   key: region
-          volumes:
+          volumeMounts:
             - name: nats-operator-tls
-              secret:
-                secretName: nats-operator-tls
+              mountPath: /etc/nats/tls
+              readOnly: true
           resources:
             limits:
               memory: "128Mi"
