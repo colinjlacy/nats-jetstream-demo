@@ -14,21 +14,15 @@ spec:
       labels:
         app: multiplier
     spec:
+      volumes:
+        - name: nats-operator-tls
+          secret:
+            secretName: nats-operator-tls
       containers:
         - name: multiplier
           image: ghcr.io/colinjlacy/colinjlacy/nats-cluster-demo-multiplier:latest
           imagePullPolicy: Always
           env:
-            - name: NATS_USER
-              valueFrom:
-                secretKeyRef:
-                  name: nats-credentials
-                  key: operator-username
-            - name: NATS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: nats-credentials
-                  key: operator-password
             - name: NATS_SERVERS
               valueFrom:
                 secretKeyRef:
@@ -39,6 +33,10 @@ spec:
                 secretKeyRef:
                   name: nats-credentials
                   key: region
+          volumes:
+            - name: nats-operator-tls
+              secret:
+                secretName: nats-operator-tls
           resources:
             limits:
               memory: "128Mi"

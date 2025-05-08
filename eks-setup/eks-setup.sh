@@ -4,11 +4,11 @@
 cd tofu-eks
 
 # ensure the plan runs successfully
-echo "Planning to create a new AKS cluster"
+echo "Planning to create a new EKS cluster"
 tofu plan --out plan
 
 # apply the plan
-echo "Applying the plan to create the AKS cluster"
+echo "Applying the plan to create the EKS cluster"
 tofu apply plan
 
 # store the cluster name in an environment variable
@@ -58,3 +58,13 @@ kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=aws-load-balanc
 # install NATS
 echo "Installing NATS"
 helm upgrade --install nats-east nats/nats -f eks-nats-values.yaml
+
+# install cert-manager
+echo "Installing cert-manager"
+helm repo add jetstack https://charts.jetstack.io --force-update
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.17.2 \
+  --set crds.enabled=true

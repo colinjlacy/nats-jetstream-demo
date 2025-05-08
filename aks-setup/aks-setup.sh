@@ -29,4 +29,13 @@ cd ../
 
 # install NATS
 echo "Installing NATS"
-helm upgrade --install nats-west nats/nats -f aks-setup/azure-nats-values.yaml
+helm upgrade --install nats-west nats/nats -f aks-nats-values.yaml
+
+# install cert-manager
+echo "Installing cert-manager"
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.17.2 \
+  --set crds.enabled=true

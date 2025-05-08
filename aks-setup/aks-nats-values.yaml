@@ -20,7 +20,7 @@ config:
     name: "nats-west"
     enabled: true
     merge:
-      advertise: "57.154.178.93:7222"
+      advertise: "172.178.141.38:7222"
       authorization:
         user: natsgate
         password: NATSC!u5t3rGa73way
@@ -31,27 +31,9 @@ config:
       # and updated the values entries with the correct endpoints.
       gateways: 
       - name: "nats-east"
-        urls:
-          - nats://natsgate:NATSC!u5t3rGa73way@k8s-default-natseast-7a73a92769-7e2f030540a4d622.elb.us-east-1.amazonaws.com:7222
+        url: nats://natsgate:NATSC!u5t3rGa73way@k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com:7222
       - name: "nats-west"
-        urls:
-    # merge:
-    #   advertise: "<your-load-balancer-endpoint>:7222"
-    #   authorization:
-    #     user: natsgate
-    #     password: NATSC!u5t3rGa73way
-      # for this demo, I used the cloud provider's load balancer servicer.
-      # that means I had to wait for the load balancer to be created before I knew
-      # what the external IP address was. until then, the following two lines were
-      # commented out. once the load balancer was created, I uncommented them
-      # and updated the values entries with the correct endpoints.
-      # gateways: 
-      # - name: "nats-east"
-      #   urls:
-      #     - nats://natsgate:NATSC!u5t3rGa73way@<your-load-balancer-endpoint>:7222
-      # - name: "nats-west"
-      #   urls:
-      #     - nats://natsgate:NATSC!u5t3rGa73way@<your-load-balancer-endpoint>:7222
+        url: nats://natsgate:NATSC!u5t3rGa73way@172.178.141.38:7222
   merge:
     accounts:
       SYS:
@@ -79,7 +61,10 @@ config:
             pass: NATSR3qu3st3rs
             permissions:
               publish:
-                allow: "math.numbers.>"
+                allow: 
+                - "math.numbers.>"
+                - "math.answers.>"
+                - "math.negatives.>"
               subscribe:
                 allow: 
                 - "_INBOX.>" # necessary for responses

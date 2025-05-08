@@ -14,21 +14,15 @@ spec:
       labels:
         app: subtractor
     spec:
+      volumes:
+        - name: nats-operator-tls
+          secret:
+            secretName: nats-operator-tls
       containers:
         - name: subtractor
           image: ghcr.io/colinjlacy/colinjlacy/nats-cluster-demo-subtractor:latest
           imagePullPolicy: Always
           env:
-            - name: NATS_USER
-              valueFrom:
-                secretKeyRef:
-                  name: nats-credentials
-                  key: operator-username
-            - name: NATS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: nats-credentials
-                  key: operator-password
             - name: NATS_SERVERS
               valueFrom:
                 secretKeyRef:
@@ -39,6 +33,10 @@ spec:
                 secretKeyRef:
                   name: nats-credentials
                   key: region
+          volumeMounts:
+            - name: nats-operator-tls
+              mountPath: /etc/nats/tls
+              readOnly: true
           resources:
             limits:
               memory: "128Mi"

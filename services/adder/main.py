@@ -40,7 +40,7 @@ async def main():
     
     print(f"Connecting to NATS servers: {server_urls}")
     # Connect to NATS server
-    nc = await nats.connect(servers=server_urls, user=nats_user, password=nats_password)
+    nc = await nats.connect(servers=server_urls, tls={"certfile": "/etc/nats/tls/tls.crt", "keyfile": "/etc/nats/tls/tls.key", "cafile": "/etc/nats/tls/ca.crt"})
 
     # Create the AdderService
     svc = await nats.micro.add_service(nc, name=f"AdderService_{region}", version="1.0.0", description="Add two numbers")
