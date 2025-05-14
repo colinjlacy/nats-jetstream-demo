@@ -2,9 +2,7 @@ import asyncio
 import json
 import os
 import signal
-import sys
 from nats.aio.client import Client as NATS
-from nats.js.api import ConsumerConfig
 import mysql.connector
 
 # Read configuration from environment
