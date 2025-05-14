@@ -6,6 +6,3 @@ metadata:
 spec:
   name: mystream
   subjects: ["orders.*"]
-  storage: memory
-  maxAge: 1h
-  account: teamA

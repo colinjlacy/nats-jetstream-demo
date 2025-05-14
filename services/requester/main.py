@@ -39,13 +39,26 @@ async def main():
         # Generate two random numbers between 1 and 100
         num1 = random.randint(1, 100)
         num2 = random.randint(1, 100)
-        payload = {"first": num1, "second": num2}
 
         for subject in subjects:
             try:
+                payload = {"first": num1, "second": num2, "operation": subject.split(".")[-1]}
                 # Send a request and wait for a response
                 response = await nc.request(subject, json.dumps(payload).encode('utf-8'), timeout=2)
+                answer = json.loads(response.data.decode())
                 print(f"Request to {subject} with payload {payload} received response: {response.data.decode()}")
+                if answer.get("result") is not None:
+                    result = answer["result"]
+                    if result > 1:
+                        print(f"Result is significant: {result}")
+                        # Publish the result to the math.numbers.positive stream
+                        ack = await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'))
+                        print(f"Message published to math.numbers.positive: {ack.stream}, seq={ack.seq}")
+                    else:
+                        print(f"Result is not significant: {result}")
+                        # Publish the result to the math.numbers.negative stream
+                        ack = await nc.publish("answers.throwaway", json.dumps(answer).encode('utf-8'))
+                        print(f"Message published to math.numbers.negative: {ack.stream}, seq={ack.seq}")
             except Exception as e:
                 print(f"Error sending request to {subject}: {e}")
 

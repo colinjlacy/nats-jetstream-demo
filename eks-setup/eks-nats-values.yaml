@@ -19,6 +19,7 @@ config:
     replicas: 3
   jetstream:
     enabled: true
+    domain: "nats-cloud"
     fileStore:
       pvc:
         size: 10Gi
@@ -48,13 +49,21 @@ config:
     accounts:
       SYS:
         users:
-          - user: CN=nack-user
+          - user: CN=nats-sys-user
           - user: sys
             pass: sysuser
       # primary account that was used to deploy the services in this demo
       teamA:
         jetstream: enabled
         users:
+          - user: CN=nack-user
+            permissions:
+              publish:
+                allow: 
+                - ">"
+              subscribe:
+                allow: 
+                - ">"
           # the four math operator services used this user
           - user: CN=nats-operator
           # - user: nats_operators
@@ -74,7 +83,9 @@ config:
           #   pass: NATSR3qu3st3rs
             permissions:
               publish:
-                allow: "math.numbers.>"
+                allow: 
+                - "math.numbers.>"
+                - "answers.*"
               subscribe:
                 allow: 
                 - "_INBOX.>" # necessary for responses
@@ -113,4 +124,9 @@ service:
           port: 7222
           targetPort: 7222
 
-
+natsBox:
+  contexts:
+    default:
+      tls:
+        secretName: nack-tls
+        dir: /etc/nats-ca-cert

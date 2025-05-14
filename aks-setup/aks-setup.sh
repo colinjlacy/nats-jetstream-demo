@@ -33,6 +33,7 @@ helm upgrade --install nats-west nats/nats -f aks-nats-values.yaml
 
 # install cert-manager
 echo "Installing cert-manager"
+helm repo add jetstack https://charts.jetstack.io --force-update
 helm install \
   cert-manager jetstack/cert-manager \
   --namespace cert-manager \

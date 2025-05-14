@@ -7,4 +7,5 @@
 **/*.tfstate.*
 **/*/nats-admin.config
 notes.txt
-**/*/*-tls.yaml
+**/*/tls.*
+**/*/ca.pem

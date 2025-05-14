@@ -1,3 +1,4 @@
+# Root CA and TLS certs for NATS
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -28,6 +29,7 @@ spec:
   ca:
     secretName: nats-ca
 ---
+# NATS server TLS certificate
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -49,8 +51,9 @@ spec:
   - '*.nats-east.default'
   - '*.nats-east.default.svc'
   - '*.nats-east.default.svc.cluster.local'
-
+  - 'k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com'
 ---
+# NATS system user TLS certificate
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
