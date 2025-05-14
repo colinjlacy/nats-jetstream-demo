@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import signal
+import ssl
 from nats.aio.client import Client as NATS
 import mysql.connector
 
@@ -103,8 +104,18 @@ async def main():
         database=MYSQL_DATABASE
     )
 
+        # Create an SSLContext
+    ssl_ctx = ssl.create_default_context(
+        purpose=ssl.Purpose.SERVER_AUTH,
+        cafile="tls.ca"
+    )
+    ssl_ctx.load_cert_chain(
+        certfile="tls.crt",
+        keyfile="tls.key"
+    )
+
     nc = NATS()
-    await nc.connect(servers=[NATS_SERVER])
+    await nc.connect(servers=[NATS_SERVER], tls=ssl_ctx)
     js = nc.jetstream()
 
     await subscribe_and_process(js, nc)
