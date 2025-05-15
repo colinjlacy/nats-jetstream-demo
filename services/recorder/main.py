@@ -7,22 +7,24 @@ from nats.aio.client import Client as NATS
 import mysql.connector
 
 # Read configuration from environment
-NATS_SERVER = os.getenv("NATS_SERVER", "nats://localhost:4222")
-NATS_SUBJECT = os.getenv("NATS_SUBJECT", "work.queue")
-NATS_STREAM = os.getenv("NATS_STREAM", "work")
-NATS_CONSUMER = os.getenv("NATS_CONSUMER", "work-consumer")
+NATS_SERVER = os.getenv("NATS_SERVER",
+                        "nats://k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com:4222")
+NATS_SUBJECT = os.getenv("NATS_SUBJECT", "answers.throwaway")
+NATS_STREAM = os.getenv("NATS_STREAM", "answers")
+NATS_CONSUMER = os.getenv("NATS_CONSUMER", "throwaway-consumer")
 
-POD_ID = os.getenv("POD_ID", "unknown-pod")
+POD_ID = os.getenv("POD_ID", "local")
 
 MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
 MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
-MYSQL_USER = os.getenv("MYSQL_USER", "user")
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "password")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "workdb")
-
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "answers")
 
 # Graceful shutdown
 stop_event = asyncio.Event()
+
+
 def shutdown():
     stop_event.set()
 
@@ -39,7 +41,7 @@ async def handle_message(msg):
         cursor = db_conn.cursor()
         cursor.execute(
             """
-            INSERT INTO operations (pod_id, first, second, result, operation)
+            INSERT INTO throwaway (pod_id, first, second, result, operation)
             VALUES (%s, %s, %s, %s, %s)
             """,
             (POD_ID, first, second, result, operation)
@@ -77,21 +79,21 @@ async def subscribe_and_process(js, nc):
 
     else:
         print("Consuming available messages and then exiting...")
-        sub = await js.subscribe(
+        sub = await js.pull_subscribe(
             subject=NATS_SUBJECT,
-            durable=NATS_CONSUMER,
             stream=NATS_STREAM,
-            bind=True
         )
 
-        msgs = await sub.messages(batch=10, timeout=2.0)
-        for msg in msgs:
-            await handle_message(msg)
-
-        print("Shutting down...")
-        await js.nc.drain()
-        db_conn.close()
-
+        try:
+            msgs = await sub.fetch(timeout=5)
+            while msgs:
+                for msg in msgs:
+                    print(f"Received message: {msg.data.decode()}")
+                    await handle_message(msg)
+                    msgs = await sub.fetch(timeout=5)
+        except asyncio.TimeoutError:
+            print("Shutting down...")
+            db_conn.close()
 
 
 async def main():
@@ -104,7 +106,7 @@ async def main():
         database=MYSQL_DATABASE
     )
 
-        # Create an SSLContext
+    # Create an SSLContext
     ssl_ctx = ssl.create_default_context(
         purpose=ssl.Purpose.SERVER_AUTH,
         cafile="tls.ca"

@@ -25,7 +25,7 @@ spec:
                   name: nats-credentials
                   key: nats-servers
             - name: LOOP_COUNT
-              value: "10"
+              value: "100"
           volumeMounts:
             - name: nats-requester-tls
               mountPath: /etc/nats/tls

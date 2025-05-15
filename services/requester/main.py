@@ -53,12 +53,12 @@ async def main():
                         print(f"Result is significant: {result}")
                         # Publish the result to the math.numbers.positive stream
                         ack = await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'))
-                        print(f"Message published to math.numbers.positive: {ack.stream}, seq={ack.seq}")
+                        print(f"Message published to math.numbers.significant: {ack.stream}, seq={ack.seq}")
                     else:
                         print(f"Result is not significant: {result}")
                         # Publish the result to the math.numbers.negative stream
                         ack = await nc.publish("answers.throwaway", json.dumps(answer).encode('utf-8'))
-                        print(f"Message published to math.numbers.negative: {ack.stream}, seq={ack.seq}")
+                        print(f"Message published to math.numbers.throwaway: {ack.stream}, seq={ack.seq}")
             except Exception as e:
                 print(f"Error sending request to {subject}: {e}")
 

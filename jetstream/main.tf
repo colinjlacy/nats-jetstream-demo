@@ -12,7 +12,7 @@ provider "jetstream" {
 
 resource "jetstream_stream" "answers" {
   name     = "answers"
-  subjects = ["answers.*"]
+  subjects = ["answers.significant", "answers.throwaway"]
   storage  = "file"
   max_age  = 60 * 60 * 24 * 365
 }
