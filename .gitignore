@@ -9,3 +9,4 @@
 notes.txt
 **/*/tls.*
 **/*/ca.pem
+**/*/venv/
