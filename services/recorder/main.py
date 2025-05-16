@@ -63,12 +63,19 @@ async def subscribe_and_process(js, nc):
 
     if long_running:
         print("Long-running mode: subscribing to messages...")
-        await js.pull_subscribe(
+        sub = await js.pull_subscribe(
             subject=NATS_SUBJECT,
             durable=NATS_CONSUMER,
             stream=NATS_STREAM,
-            cb=handle_message,
         )
+
+        msgs = await sub.fetch()
+        while msgs:
+            for msg in msgs:
+                print(f"Received message: {msg.data.decode()}")
+                await handle_message(msg)
+                msgs = await sub.fetch()
+
 
         await stop_event.wait()
 
