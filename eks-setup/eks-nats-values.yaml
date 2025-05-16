@@ -86,11 +86,12 @@ config:
                 allow: 
                 - "_INBOX.>" # necessary for responses
           # the recorder service that stuffs it all into MySQL
-          - user: CN=nats-recorder-tls
+          - user: CN=nats-recorder
             permissions:
               subscribe:
                 allow: 
                 - "answers.*"
+                - "_INBOX.>" 
     system_account: SYS
 
 podTemplate:

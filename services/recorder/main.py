@@ -67,7 +67,6 @@ async def subscribe_and_process(js, nc):
             subject=NATS_SUBJECT,
             durable=NATS_CONSUMER,
             stream=NATS_STREAM,
-            bind=True,
             cb=handle_message,
         )
 

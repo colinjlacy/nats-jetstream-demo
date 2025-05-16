@@ -4,6 +4,7 @@ kind: ConfigMap
 metadata:
   name: recorder-config
 data:
+  LONG_RUNNING: "true"
   NATS_SERVERS: "nats://nats-east.default.svc.cluster.local:4222"
   NATS_SUBJECT: "answers.throwaway"
   NATS_STREAM: "answers"
@@ -37,7 +38,7 @@ spec:
             secretName: nats-recorder-tls
       containers:
         - name: recorder
-          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-divider:latest
+          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-recorder:latest
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
