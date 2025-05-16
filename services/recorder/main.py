@@ -11,7 +11,7 @@ NATS_SERVER = os.getenv("NATS_SERVER",
                         "nats://k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com:4222")
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "answers.throwaway")
 NATS_STREAM = os.getenv("NATS_STREAM", "answers")
-NATS_CONSUMER = os.getenv("NATS_CONSUMER", "throwaway-consumer")
+NATS_CONSUMER = os.getenv("NATS_CONSUMER", "answers-consumer")
 NATS_TLS_PATH = os.getenv("NATS_TLS_PATH", "./")
 
 POD_ID = os.getenv("POD_ID", "local")
@@ -32,12 +32,16 @@ def shutdown():
 
 
 async def fetch_messages(sub):
-    msgs = await sub.fetch(timeout=5)
-    while msgs:
-        for msg in msgs:
-            print(f"Received message: {msg.data.decode()}")
-            await handle_message(msg)
-            msgs = await sub.fetch(timeout=5)
+    try:
+        msgs = await sub.fetch(timeout=5)
+        while msgs:
+            for msg in msgs:
+                print(f"Received message: {msg.data.decode()}")
+                await handle_message(msg)
+                msgs = await sub.fetch(timeout=5)
+    except asyncio.TimeoutError:
+        print("Timeout reached, resetting fetch...")
+        await fetch_messages(sub)
 
 
 async def handle_message(msg):
@@ -79,9 +83,6 @@ async def subscribe_and_process(js, nc):
         )
 
         try:
-            await fetch_messages(sub)
-        except asyncio.TimeoutError:
-            print("Timeout reached, resetting fetch...")
             await fetch_messages(sub)
         except Exception as e:
             print(f"Error during message processing: {e}")
