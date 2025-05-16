@@ -22,7 +22,7 @@ metadata:
   labels:
     app: recorder
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: recorder
@@ -38,6 +38,7 @@ spec:
       containers:
         - name: recorder
           image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-divider:latest
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: recorder-config
