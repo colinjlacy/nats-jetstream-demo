@@ -117,6 +117,12 @@ async def main():
         database=MYSQL_DATABASE
     )
 
+    print(f"checking the TLS path: {NATS_TLS_PATH}")
+    if not os.path.exists(NATS_TLS_PATH):
+        print(f"TLS path does not exist: {NATS_TLS_PATH}")
+        return
+    print(f"{NATS_TLS_PATH}/ca.crt")
+
     # Create an SSLContext
     ssl_ctx = ssl.create_default_context(
         purpose=ssl.Purpose.SERVER_AUTH,
