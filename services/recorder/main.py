@@ -79,10 +79,10 @@ async def subscribe_and_process(js, nc):
         )
 
         try:
-            fetch_messages(sub)
+            await fetch_messages(sub)
         except asyncio.TimeoutError:
             print("Timeout reached, resetting fetch...")
-            fetch_messages(sub)
+            await fetch_messages(sub)
         except Exception as e:
             print(f"Error during message processing: {e}")
             db_conn.close()
