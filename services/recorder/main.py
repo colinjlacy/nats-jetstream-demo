@@ -120,7 +120,7 @@ async def main():
     # Create an SSLContext
     ssl_ctx = ssl.create_default_context(
         purpose=ssl.Purpose.SERVER_AUTH,
-        cafile=f"{NATS_TLS_PATH}/tls.ca"
+        cafile=f"{NATS_TLS_PATH}/ca.crt"
     )
     ssl_ctx.load_cert_chain(
         certfile=f"{NATS_TLS_PATH}/tls.crt",

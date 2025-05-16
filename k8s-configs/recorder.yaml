@@ -4,10 +4,11 @@ kind: ConfigMap
 metadata:
   name: recorder-config
 data:
-  NATS_SERVER: "nats://nats-east.default.svc.cluster.local:4222"
+  NATS_SERVERS: "nats://nats-east.default.svc.cluster.local:4222"
   NATS_SUBJECT: "answers.throwaway"
   NATS_STREAM: "answers"
   NATS_CONSUMER: "throwaway-consumer"
+  NATS_TLS_PATH: "/etc/nats/tls"
   MYSQL_HOST: "mysql.default.svc.cluster.local"
   MYSQL_PORT: "3306"
   MYSQL_USER: "root"
@@ -48,8 +49,8 @@ spec:
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: recorder-secret
-                  key: MYSQL_PASSWORD
+                  name: mysql
+                  key: mysql-root-password
           volumeMounts:
             - name: nats-recorder-tls
               mountPath: /etc/nats/tls
