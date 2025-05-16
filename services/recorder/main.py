@@ -12,6 +12,7 @@ NATS_SERVER = os.getenv("NATS_SERVER",
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "answers.throwaway")
 NATS_STREAM = os.getenv("NATS_STREAM", "answers")
 NATS_CONSUMER = os.getenv("NATS_CONSUMER", "throwaway-consumer")
+NATS_TLS_PATH = os.getenv("NATS_TLS_PATH", "./")
 
 POD_ID = os.getenv("POD_ID", "local")
 
@@ -20,6 +21,7 @@ MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
 MYSQL_USER = os.getenv("MYSQL_USER", "root")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "password")
 MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "answers")
+MYSQL_TABLE = os.getenv("MYSQL_TABLE", "throwaway")
 
 # Graceful shutdown
 stop_event = asyncio.Event()
@@ -40,8 +42,8 @@ async def handle_message(msg):
         # Insert into MySQL
         cursor = db_conn.cursor()
         cursor.execute(
-            """
-            INSERT INTO throwaway (pod_id, first, second, result, operation)
+            f"""
+            INSERT INTO {MYSQL_TABLE} (pod_id, first, second, result, operation)
             VALUES (%s, %s, %s, %s, %s)
             """,
             (POD_ID, first, second, result, operation)
@@ -67,7 +69,6 @@ async def subscribe_and_process(js, nc):
             stream=NATS_STREAM,
             bind=True,
             cb=handle_message,
-            manual_ack=True
         )
 
         await stop_event.wait()
@@ -76,13 +77,23 @@ async def subscribe_and_process(js, nc):
         await nc.drain()
         db_conn.close()
 
-
     else:
         print("Consuming available messages and then exiting...")
         sub = await js.pull_subscribe(
             subject=NATS_SUBJECT,
             stream=NATS_STREAM,
         )
+
+        # cinfo = await js.add_consumer(
+        #     stream=NATS_STREAM,
+        #     filter_subjects=["answers.*"],
+        #     inactive_threshold=300.0,
+        # )
+        #
+        # # Using named arguments.
+        # sub = await js.pull_subscribe_bind(
+        #     stream=NATS_STREAM, consumer=cinfo.name
+        # )
 
         try:
             msgs = await sub.fetch(timeout=5)
@@ -92,7 +103,7 @@ async def subscribe_and_process(js, nc):
                     await handle_message(msg)
                     msgs = await sub.fetch(timeout=5)
         except asyncio.TimeoutError:
-            print("Shutting down...")
+            print("No more messages. Shutting down...")
             db_conn.close()
 
 
@@ -109,25 +120,19 @@ async def main():
     # Create an SSLContext
     ssl_ctx = ssl.create_default_context(
         purpose=ssl.Purpose.SERVER_AUTH,
-        cafile="tls.ca"
+        cafile=f"{NATS_TLS_PATH}/tls.ca"
     )
     ssl_ctx.load_cert_chain(
-        certfile="tls.crt",
-        keyfile="tls.key"
+        certfile=f"{NATS_TLS_PATH}/tls.crt",
+        keyfile=f"{NATS_TLS_PATH}/tls.key"
     )
 
     nc = NATS()
     await nc.connect(servers=[NATS_SERVER], tls=ssl_ctx)
     js = nc.jetstream()
 
-    await subscribe_and_process(js, nc)
-
     print(f"Worker running as {POD_ID}, listening on subject '{NATS_SUBJECT}'")
-    await stop_event.wait()
-
-    print("Shutting down...")
-    await nc.drain()
-    db_conn.close()
+    await subscribe_and_process(js, nc)
 
 
 if __name__ == "__main__":

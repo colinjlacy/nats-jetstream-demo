@@ -1,0 +1,63 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recorder-config
+data:
+  NATS_SERVER: "nats://nats-east.default.svc.cluster.local:4222"
+  NATS_SUBJECT: "answers.throwaway"
+  NATS_STREAM: "answers"
+  NATS_CONSUMER: "throwaway-consumer"
+  MYSQL_HOST: "mysql.default.svc.cluster.local"
+  MYSQL_PORT: "3306"
+  MYSQL_USER: "root"
+  MYSQL_DATABASE: "answers"
+  MYSQL_TABLE: "significant"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: recorder
+  labels:
+    app: recorder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: recorder
+  template:
+    metadata:
+      labels:
+        app: recorder
+    spec:
+      volumes:
+        - name: nats-recorder-tls
+          secret:
+            secretName: nats-recorder-tls
+      containers:
+        - name: recorder
+          image: ghcr.io/colinjlacy/colinjlacy/nats-jetstream-demo-divider:latest
+          envFrom:
+            - configMapRef:
+                name: recorder-config
+          env:
+            - name: POD_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: recorder-secret
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: nats-recorder-tls
+              mountPath: /etc/nats/tls
+              readOnly: true
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+            requests:
+              memory: "128Mi"
+              cpu: "250m"

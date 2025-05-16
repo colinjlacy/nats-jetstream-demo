@@ -70,14 +70,13 @@ spec:
     - key encipherment
     - client auth
   commonName: nats-sys-user
-
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: nack-tls
+  name: nats-admin-tls
 spec:
-  secretName: nack-tls
+  secretName: nats-admin-tls
   duration: 2160h # 90 days
   renewBefore: 240h # 10 days
   issuerRef:
@@ -87,8 +86,7 @@ spec:
     - digital signature
     - key encipherment
     - client auth
-  commonName: nack-user
-
+  commonName: nats-admin
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -106,7 +104,6 @@ spec:
     - key encipherment
     - client auth
   commonName: nats-operator
-
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -124,3 +121,20 @@ spec:
     - key encipherment
     - client auth
   commonName: nats-requester
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nats-recorder-tls
+spec:
+  secretName: nats-recorder-tls
+  duration: 2160h # 90 days
+  renewBefore: 240h # 10 days
+  issuerRef:
+    name: nats-ca
+    kind: Issuer
+  usages:
+    - digital signature
+    - key encipherment
+    - client auth
+  commonName: nats-recorder
