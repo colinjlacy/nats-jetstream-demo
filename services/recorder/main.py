@@ -31,6 +31,15 @@ def shutdown():
     stop_event.set()
 
 
+async def fetch_messages(sub):
+    msgs = await sub.fetch(timeout=10000)
+    while msgs:
+        for msg in msgs:
+            print(f"Received message: {msg.data.decode()}")
+            await handle_message(msg)
+            msgs = await sub.fetch(timeout=10000)
+
+
 async def handle_message(msg):
     try:
         payload = json.loads(msg.data.decode())
@@ -69,15 +78,18 @@ async def subscribe_and_process(js, nc):
             stream=NATS_STREAM,
         )
 
-        msgs = await sub.fetch()
-        while msgs:
-            for msg in msgs:
-                print(f"Received message: {msg.data.decode()}")
-                await handle_message(msg)
-                msgs = await sub.fetch()
-
-
-        await stop_event.wait()
+        try:
+            fetch_messages(sub)
+        except asyncio.TimeoutError:
+            print("Timeout reached, resetting fetch...")
+            fetch_messages(sub)
+        except Exception as e:
+            print(f"Error during message processing: {e}")
+            db_conn.close()
+            asyncio.get_event_loop().stop()
+        finally:
+            print("Cleaning up...")
+            await sub.unsubscribe()
 
         print("Shutting down...")
         await nc.drain()
