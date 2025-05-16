@@ -63,7 +63,7 @@ async def subscribe_and_process(js, nc):
 
     if long_running:
         print("Long-running mode: subscribing to messages...")
-        await js.subscribe(
+        await js.pull_subscribe(
             subject=NATS_SUBJECT,
             durable=NATS_CONSUMER,
             stream=NATS_STREAM,

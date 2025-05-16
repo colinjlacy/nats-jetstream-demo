@@ -6,9 +6,9 @@ metadata:
 data:
   LONG_RUNNING: "true"
   NATS_SERVERS: "nats://nats-east.default.svc.cluster.local:4222"
-  NATS_SUBJECT: "answers.throwaway"
+  NATS_SUBJECT: "answers.significant"
   NATS_STREAM: "answers"
-  NATS_CONSUMER: "throwaway-consumer"
+  NATS_CONSUMER: "answers-consumer"
   NATS_TLS_PATH: "/etc/nats/tls"
   MYSQL_HOST: "mysql.default.svc.cluster.local"
   MYSQL_PORT: "3306"
