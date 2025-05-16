@@ -32,12 +32,12 @@ def shutdown():
 
 
 async def fetch_messages(sub):
-    msgs = await sub.fetch(timeout=10000)
+    msgs = await sub.fetch(timeout=5)
     while msgs:
         for msg in msgs:
             print(f"Received message: {msg.data.decode()}")
             await handle_message(msg)
-            msgs = await sub.fetch(timeout=10000)
+            msgs = await sub.fetch(timeout=5)
 
 
 async def handle_message(msg):
