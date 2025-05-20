@@ -1,9 +1,0 @@
-jetstream:
-  nats:
-    url: nats://nats-east.default.svc.cluster.local:4222
-  tls:
-    enabled: true
-    tlsFirst: false
-    secretName: nack-tls
-    cert: tls.crt
-    key: tls.key

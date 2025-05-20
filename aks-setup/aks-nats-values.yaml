@@ -52,13 +52,14 @@ config:
     accounts:
       SYS:
         users:
+          - user: CN=nats-sys-user
           - user: sys
             pass: sysuser
       # primary account that was used to deploy the services in this demo
       teamA:
         jetstream: enabled
         users:
-          - user: CN=nack-user
+          - user: CN=nats-admin
             permissions:
               publish:
                 allow: 
@@ -68,8 +69,6 @@ config:
                 - ">"
           # the four math operator services used this user
           - user: CN=nats-operator
-          # - user: nats_operators
-          #   pass: NATS0per@tors
             permissions:
               publish:
                 allow: "$SRV.>"
@@ -81,19 +80,21 @@ config:
               allow_responses: true
           # the requester job used this user
           - user: CN=nats-requester
-          # - user: nats_requesters
-          #   pass: NATSR3qu3st3rs
             permissions:
               publish:
-                allow: "math.numbers.>"
+                allow: 
+                - "math.numbers.>"
+                - "answers.*"
               subscribe:
                 allow: 
                 - "_INBOX.>" # necessary for responses
-      # Another account, if we want to see how cross-account traffic is restricted
-      teamB:
-        users:
-          - user: natsUserB
-            pass: NATS_U$3R_b33
+          # the recorder service that stuffs it all into MySQL
+          - user: CN=nats-recorder
+            permissions:
+              subscribe:
+                allow: 
+                - "answers.*"
+                - "_INBOX.>" 
     system_account: SYS
 
 podTemplate:

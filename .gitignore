@@ -11,3 +11,4 @@ notes.txt
 **/*/ca.pem
 **/*/ca.crt
 **/*/venv/
+**/*/*.config

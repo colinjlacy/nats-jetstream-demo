@@ -11,8 +11,9 @@ NATS_SERVER = os.getenv("NATS_SERVER",
                         "nats://k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com:4222")
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "answers.throwaway")
 NATS_STREAM = os.getenv("NATS_STREAM", "answers")
-NATS_CONSUMER = os.getenv("NATS_CONSUMER", "answers-consumer")
+NATS_CONSUMER = os.getenv("NATS_CONSUMER")  # Default purposely not specified
 NATS_TLS_PATH = os.getenv("NATS_TLS_PATH", "./")
+NATS_TIMEOUT = int(os.getenv("NATS_TIMEOUT", "5"))
 
 POD_ID = os.getenv("POD_ID", "local")
 
@@ -32,16 +33,21 @@ def shutdown():
 
 
 async def fetch_messages(sub):
-    try:
-        msgs = await sub.fetch(timeout=5)
-        while msgs:
+    while not stop_event.is_set():
+        try:
+            msgs = await sub.fetch(timeout=NATS_TIMEOUT)
+            if not msgs:
+                continue  # Nothing fetched, continue polling
+
             for msg in msgs:
                 print(f"Received message: {msg.data.decode()}")
                 await handle_message(msg)
-                msgs = await sub.fetch(timeout=5)
-    except asyncio.TimeoutError:
-        print("Timeout reached, resetting fetch...")
-        await fetch_messages(sub)
+
+        except asyncio.TimeoutError:
+            print("Timeout reached, continuing fetch loop...")
+        except Exception as e:
+            print(f"Unexpected error during message fetch: {e}")
+            break
 
 
 async def handle_message(msg):
@@ -71,13 +77,19 @@ async def handle_message(msg):
         await msg.nak()
 
 
-async def subscribe_and_process(js, nc):
+async def subscribe_and_process(js):
     long_running = os.getenv("LONG_RUNNING", "false").lower() == "true"
 
     if long_running:
         print("Long-running mode: subscribing to messages...")
         sub = await js.pull_subscribe(
-            subject=NATS_SUBJECT,
+            # note that `subject` ignored IF a durable name is provided
+            # AND the durable name matches an existing consumer.
+            # however, the Python SDK does not know if a consumer exists
+            # until it connects to the server, and it will create one if it doesn't
+            # exist. So we need to provide a subject here to avoid an error
+            subject=None,
+            # subject=NATS_SUBJECT,
             durable=NATS_CONSUMER,
             stream=NATS_STREAM,
         )
@@ -87,13 +99,12 @@ async def subscribe_and_process(js, nc):
         except Exception as e:
             print(f"Error during message processing: {e}")
             db_conn.close()
-            asyncio.get_event_loop().stop()
+            shutdown()
         finally:
             print("Cleaning up...")
             await sub.unsubscribe()
 
         print("Shutting down...")
-        await nc.drain()
         db_conn.close()
 
     else:
@@ -103,9 +114,10 @@ async def subscribe_and_process(js, nc):
             stream=NATS_STREAM,
         )
 
+        # the block above is a convenience method for the block below
         # cinfo = await js.add_consumer(
         #     stream=NATS_STREAM,
-        #     filter_subjects=["answers.*"],
+        #     filter_subjects=[NATS_SUBJECT],
         #     inactive_threshold=300.0,
         # )
         #
@@ -157,7 +169,7 @@ async def main():
     js = nc.jetstream()
 
     print(f"Worker running as {POD_ID}, listening on subject '{NATS_SUBJECT}'")
-    await subscribe_and_process(js, nc)
+    await subscribe_and_process(js)
 
 
 if __name__ == "__main__":

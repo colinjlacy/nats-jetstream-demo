@@ -13,10 +13,6 @@ async def main():
     else:
         server_urls = [url.strip() for url in server_urls]
         print(f"Using NATS servers: {server_urls}")
-    # nats_user = os.environ.get("NATS_USER")
-    # nats_password = os.environ.get("NATS_PASSWORD")
-    # if not nats_user or not nats_password:
-    #     raise ValueError("NATS_USER or NATS_PASSWORD environment variable is not set.")
     ssl_ctx = ssl.create_default_context(
         purpose=ssl.Purpose.SERVER_AUTH,
         cafile="/etc/nats/tls/ca.crt"
@@ -27,7 +23,6 @@ async def main():
     )
     nc = NATS()
     await nc.connect(servers=server_urls, tls=ssl_ctx)
-    # await nc.connect(servers=server_urls, user=nats_user, password=nats_password)
 
     # Read the number of iterations from the environment variable
     loop_count = int(os.getenv("LOOP_COUNT", 10))
@@ -49,16 +44,17 @@ async def main():
                 print(f"Request to {subject} with payload {payload} received response: {response.data.decode()}")
                 if answer.get("result") is not None:
                     result = answer["result"]
-                    if result > 1:
-                        print(f"Result is significant: {result}")
-                        # Publish the result to the math.numbers.positive stream
-                        ack = await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'))
-                        print(f"Message published to math.numbers.significant: {ack.stream}, seq={ack.seq}")
-                    else:
-                        print(f"Result is not significant: {result}")
-                        # Publish the result to the math.numbers.negative stream
-                        ack = await nc.publish("answers.throwaway", json.dumps(answer).encode('utf-8'))
-                        print(f"Message published to math.numbers.throwaway: {ack.stream}, seq={ack.seq}")
+                    # result is significant if greater than 1
+                    # result is throwaway if less than or equal to 1
+                    try:
+                        if result > 1:
+                            print(f"Result is significant: {result}")
+                            await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'))
+                        else:
+                            print(f"Result is not significant: {result}")
+                            await nc.publish("answers.throwaway", json.dumps(answer).encode('utf-8'))
+                    except Exception as e:
+                        print(f"Error publishing result message: {e}")
             except Exception as e:
                 print(f"Error sending request to {subject}: {e}")
 

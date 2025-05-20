@@ -1,3 +1,0 @@
-jetstream:
-  nats:
-    url: nats://nats-west.default.svc.cluster.local:4222
