@@ -12,7 +12,7 @@ NATS_SERVER = os.getenv("NATS_SERVER",
 NATS_SUBJECT = os.getenv("NATS_SUBJECT", "answers.throwaway")
 NATS_STREAM = os.getenv("NATS_STREAM", "answers")
 NATS_CONSUMER = os.getenv("NATS_CONSUMER")  # Default purposely not specified
-NATS_TLS_PATH = os.getenv("NATS_TLS_PATH", "./")
+NATS_TLS_PATH = os.getenv("NATS_TLS_PATH", ".")
 NATS_TIMEOUT = int(os.getenv("NATS_TIMEOUT", "5"))
 
 POD_ID = os.getenv("POD_ID", "local")
@@ -83,13 +83,13 @@ async def subscribe_and_process(js):
     if long_running:
         print("Long-running mode: subscribing to messages...")
         sub = await js.pull_subscribe(
-            # note that `subject` ignored IF a durable name is provided
+            # note that `subject` is ignored IF a durable name is provided
             # AND the durable name matches an existing consumer.
             # however, the Python SDK does not know if a consumer exists
             # until it connects to the server, and it will create one if it doesn't
-            # exist. So we need to provide a subject here to avoid an error
+            # exist. So we can provide None as a subject here, and it will
+            # use the durable name to find the existing consumer and its subjects.
             subject=None,
-            # subject=NATS_SUBJECT,
             durable=NATS_CONSUMER,
             stream=NATS_STREAM,
         )
@@ -113,18 +113,6 @@ async def subscribe_and_process(js):
             subject=NATS_SUBJECT,
             stream=NATS_STREAM,
         )
-
-        # the block above is a convenience method for the block below
-        # cinfo = await js.add_consumer(
-        #     stream=NATS_STREAM,
-        #     filter_subjects=[NATS_SUBJECT],
-        #     inactive_threshold=300.0,
-        # )
-        #
-        # # Using named arguments.
-        # sub = await js.pull_subscribe_bind(
-        #     stream=NATS_STREAM, consumer=cinfo.name
-        # )
 
         try:
             msgs = await sub.fetch(timeout=5)
@@ -152,7 +140,6 @@ async def main():
     if not os.path.exists(NATS_TLS_PATH):
         print(f"TLS path does not exist: {NATS_TLS_PATH}")
         return
-    print(f"{NATS_TLS_PATH}/ca.crt")
 
     # Create an SSLContext
     ssl_ctx = ssl.create_default_context(

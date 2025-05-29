@@ -5,7 +5,7 @@
 **/*terraform.*
 **/*plan
 **/*.tfstate.*
-**/*/nats-admin.config
+nats-admin.config
 notes.txt
 **/*/tls.*
 **/*/ca.pem
