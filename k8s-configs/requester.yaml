@@ -26,6 +26,8 @@ spec:
                   key: nats-servers
             - name: LOOP_COUNT
               value: "100"
+            - name: DUPLICATE
+              value: "true"
           volumeMounts:
             - name: nats-requester-tls
               mountPath: /etc/nats/tls
