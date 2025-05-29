@@ -32,7 +32,7 @@ resource "jetstream_stream" "answers" {
   # max_bytes  = 1028
   # max_msgs   = 30
   # max_age  = 20
-  duplicate_window = 10
+  duplicate_window = 1
   # max_age  = 60 * 60 * 24 * 5
 }
 

@@ -51,11 +51,13 @@ async def main():
                             print(f"Result is significant: {result}")
                             await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'), None, {"Nats-Msg-Id": f"{subject}-response-{i}"})
                             if os.environ.get("DUPLICATE", "false") == "true":
+                                await asyncio.sleep(1)  # Simulate a delay for duplicate processing
                                 await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'), None, {"Nats-Msg-Id": f"{subject}-response-{i}"})
                         else:
                             print(f"Result is not significant: {result}")
                             await nc.publish("answers.throwaway", json.dumps(answer).encode('utf-8'), None, {"Nats-Msg-Id": f"{subject}-response-{i}"})
                             if os.environ.get("DUPLICATE", "false") == "true":
+                                await asyncio.sleep(1)
                                 await nc.publish("answers.significant", json.dumps(answer).encode('utf-8'), None, {"Nats-Msg-Id": f"{subject}-response-{i}"})
                     except Exception as e:
                         print(f"Error publishing result message: {e}")
