@@ -52,7 +52,8 @@ spec:
   - '*.nats-west.default.svc'
   - '*.nats-west.default.svc.cluster.local'
   ipAddresses:
-  - '172.178.141.38'
+  # populate with your NATS server IP in Azure
+  - ''
 ---
 # NATS system user TLS certificate
 apiVersion: cert-manager.io/v1

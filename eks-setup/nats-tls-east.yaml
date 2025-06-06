@@ -51,7 +51,8 @@ spec:
   - '*.nats-east.default'
   - '*.nats-east.default.svc'
   - '*.nats-east.default.svc.cluster.local'
-  - 'k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com'
+  # populate with your NATS server address in EKS
+  - ''
 ---
 # NATS system user TLS certificate
 apiVersion: cert-manager.io/v1

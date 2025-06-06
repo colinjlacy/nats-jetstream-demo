@@ -31,6 +31,7 @@ config:
     name: "nats-east"
     enabled: true
     merge:
+      # populate with your NATS server address in EKS
       advertise: "k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com:7222"
       authorization:
         user: natsgate
@@ -42,9 +43,11 @@ config:
       # and updated the values entries with the correct endpoints.
       gateways: 
       - name: "nats-east"
-        url: nats://natsgate:NATSC!u5t3rGa73way@k8s-default-natseast-d3a2cc2411-682b3011270d1d56.elb.us-east-1.amazonaws.com:7222
+        # populate with your NATS server address in EKS
+        url: ""
       - name: "nats-west"
-        url: nats://natsgate:NATSC!u5t3rGa73way@172.178.141.38:7222
+        # populate with your NATS server address in Azure
+        url: ""
   merge:
     accounts:
       SYS:
